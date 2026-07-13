@@ -2,22 +2,20 @@ import openai
 import pandas as pd
 from typing import Dict, Any
 import time
+import os
 
 class MessageGenerator:
     def __init__(self, api_key: str = None, temperature: float = 0.7):
         if api_key:
             openai.api_key = api_key
         else:
-            import os
             openai.api_key = os.getenv("OPENAI_API_KEY")
         
         self.temperature = temperature
-        self.model = "gpt-3.5-turbo"  # You can change to gpt-4 if available
+        self.model = "gpt-3.5-turbo"
     
     def generate_message(self, lead: Dict[str, Any]) -> str:
-        """
-        Generate a personalized message for a single lead
-        """
+        """Generate a personalized message for a single lead"""
         business_name = lead.get('business_name', 'Business')
         business_type = lead.get('business_type', 'business')
         pain_point = lead.get('pain_point', 'your challenges')
@@ -82,17 +80,13 @@ Best regards,
 [Your Company]"""
     
     def generate_messages(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Generate messages for all leads in the DataFrame
-        """
+        """Generate messages for all leads in the DataFrame"""
         messages = []
         
         for idx, row in df.iterrows():
             lead = row.to_dict()
             message = self.generate_message(lead)
             messages.append(message)
-            
-            # Rate limiting to avoid hitting API limits
             time.sleep(0.5)
         
         df['generated_message'] = messages
